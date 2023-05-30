@@ -19,7 +19,7 @@ mkdir -p sys
 # mkdir -p usr
 
 cd dev
-sudo MAKEDEV std console
+sudo MAKEDEV console
 cd ..
 
 # Leave out/rootfs
