@@ -1,0 +1,9 @@
+go 1.18
+
+use (
+	./init
+	./programs/clear
+	./programs/gorgon
+	./programs/ls
+	./programs/pwd
+)

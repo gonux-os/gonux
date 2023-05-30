@@ -1,5 +1,4 @@
 #!/bin/sh
 
-cd linux
-qemu-system-x86_64 -kernel arch/x86/boot/bzImage -initrd "../rootfs.cpio.gz"
-cd ..
+echo "Running qemu"
+qemu-system-x86_64 -kernel linux/arch/x86/boot/bzImage -initrd "out/rootfs.cpio.gz"
