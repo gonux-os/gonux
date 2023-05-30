@@ -6,8 +6,6 @@ import (
 	"time"
 )
 
-// "github.com/NeowayLabs/drm"
-
 const (
 	KDSETMODE = 0x4B3A
 
@@ -16,8 +14,7 @@ const (
 )
 
 func main() {
-	console, _ := os.OpenFile("/dev/console", os.O_RDWR, 0)
-	syscall.Syscall(syscall.SYS_IOCTL, console.Fd(), uintptr(KDSETMODE), uintptr(KD_GRAPHICS))
+	syscall.Syscall(syscall.SYS_IOCTL, os.Stdout.Fd(), uintptr(KDSETMODE), uintptr(KD_GRAPHICS))
 	time.Sleep(3 * time.Second)
-	syscall.Syscall(syscall.SYS_IOCTL, console.Fd(), uintptr(KDSETMODE), uintptr(KD_TEXT))
+	syscall.Syscall(syscall.SYS_IOCTL, os.Stdout.Fd(), uintptr(KDSETMODE), uintptr(KD_TEXT))
 }
