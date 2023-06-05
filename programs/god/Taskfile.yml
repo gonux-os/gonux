@@ -1,0 +1,35 @@
+# https://taskfile.dev
+
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task -l
+    silent: true
+
+  gen-proto:
+    desc: Generate protobuf sources
+    dir: network/proto
+    cmds:
+      - PATH="$PATH:$(go env GOPATH)/bin" protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative ./god.proto
+
+  clean:
+    desc: Clean build directory
+    silent: true
+    dir: out
+    cmds:
+      - rm -rf *
+
+  build:
+    desc: Build god
+    cmds:
+      - mkdir -p out
+      - task: clean
+      - go build -o out/god .
+
+  run:
+    desc: Run god
+    cmds:
+      - cmd: go run .
+        ignore_error: true

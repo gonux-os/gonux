@@ -1,0 +1,29 @@
+# https://taskfile.dev
+
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task -l
+    silent: true
+
+  clean:
+    desc: Clean build directory
+    silent: true
+    dir: out
+    cmds:
+      - rm -rf *
+
+  build:
+    desc: Build pwd
+    cmds:
+      - mkdir -p out
+      - task: clean
+      - go build -o out/pwd .
+
+  run:
+    desc: Run pwd
+    cmds:
+      - cmd: go run .
+        ignore_error: true

@@ -1,0 +1,163 @@
+# https://taskfile.dev
+
+version: '3'
+
+output: group
+
+includes:
+  init:
+    taskfile: ./init
+    dir: ./init
+    internal: true
+
+  pwd:
+    taskfile: ./programs/pwd
+    dir: ./programs/pwd
+    internal: true
+
+  ls:
+    taskfile: ./programs/ls
+    dir: ./programs/ls
+    internal: true
+
+  clear:
+    taskfile: ./programs/clear
+    dir: ./programs/clear
+    internal: true
+
+  god:
+    taskfile: ./programs/god
+    dir: ./programs/god
+    internal: true
+
+  gorgon:
+    taskfile: ./programs/gorgon
+    dir: ./programs/gorgon
+    internal: true
+
+tasks:
+  default:
+    silent: true
+    cmds:
+      - task -l
+
+  make-fs-structure:
+    desc: Make rootfs directories
+    dir: out/rootfs
+    internal: true
+    cmds:
+      - mkdir -p bin
+      - mkdir -p dev
+      - # mkdir -p etc
+      - # mkdir -p home
+      - # mkdir -p mnt
+      - mkdir -p proc
+      - mkdir -p sys
+      - # mkdir -p usr
+
+  populate-dev:
+    desc: Populate /dev with devices
+    dir: out/rootfs/dev
+    internal: true
+    cmds:
+      - sudo MAKEDEV console
+
+  package-fs:
+    desc: Package rootfs into a cpio.gz file
+    dir: out/rootfs
+    internal: true
+    cmds:
+      - find . | cpio -o -H newc | gzip > ../rootfs.cpio.gz
+
+  copy-program:
+    desc: Copy a program's binaries to fs
+    internal: true
+    cmds:
+      - cp -r programs/{{.PROGRAM}}/out/* out/rootfs/bin/
+
+  build-programs:
+    desc: Build programs
+    internal: true
+    deps:
+      - task: pwd:build
+      - task: ls:build
+      - task: clear:build
+      - task: god:build
+      - task: gorgon:build
+    cmds:
+      - task: copy-programs
+
+  copy-programs:
+    desc: Copy program binaries to fs
+    internal: true
+    deps:
+      - task: copy-program
+        vars:
+          PROGRAM: pwd
+      - task: copy-program
+        vars:
+          PROGRAM: ls
+      - task: copy-program
+        vars:
+          PROGRAM: clear
+      - task: copy-program
+        vars:
+          PROGRAM: god
+      - task: copy-program
+        vars:
+          PROGRAM: gorgon
+
+  build-init:
+    desc: Build init process
+    internal: true
+    deps:
+      - task: init:build
+    cmds:
+      - cp -r init/out/* out/rootfs/
+
+  build-userland:
+    desc: Build userland software
+    deps:
+      - task: build-init
+      - task: build-programs
+
+  build-out:
+    desc: Create everything in out directory
+    internal: true
+    deps:
+      - task: populate-dev
+      - task: build-userland
+
+  make-build-dir:
+    desc: Make the out directory
+    internal: true
+    cmds:
+      - mkdir -p out/rootfs
+
+  clean:
+    desc: Clean build directory
+    silent: true
+    dir: out
+    cmds:
+      - rm -rf *
+
+  build:
+    desc: Build gonux
+    cmds:
+      - task: make-build-dir
+      - task: clean
+      - task: make-fs-structure
+      - task: build-out
+      - task: package-fs
+
+  run:
+    desc: Launch a QEMU instance running the kernel
+    cmds:
+      - cmd: qemu-system-x86_64 -kernel "linux/arch/x86/boot/bzImage" -initrd "out/rootfs.cpio.gz" -monitor stdio -usb
+        ignore_error: true
+
+  start:
+    desc: Build and launch gonux
+    cmds:
+      - task: build
+      - task: run
