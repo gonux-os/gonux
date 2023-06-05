@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+option go_package = "god/network/proto";
+
+package proto;
+
+message Empty {}
+
+message ActionIdRequest {
+    string name = 1;
+}
+
+message ActionCallEvent {
+    string uuid = 1;
+}
+
+message ActionRegisterRequest {
+    string name = 1;
+    string uuid = 2;
+}
+
+service God {
+    rpc Register(ActionRegisterRequest) returns (Empty) {}
+	rpc Call(ActionIdRequest) returns (Empty) {}
+	rpc WaitFor(ActionIdRequest) returns (Empty) {}
+    rpc Subscribe(Empty) returns (stream ActionCallEvent) {}
+}
